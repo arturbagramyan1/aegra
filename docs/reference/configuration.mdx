@@ -54,7 +54,7 @@ aegra dev
       "strategy": "delete",
       "default_ttl": 43200,
       "sweep_interval_minutes": 5,
-      "sweep_limit": 1000
+      "sweep_limit": 10000
     }
   }
 }
@@ -291,7 +291,7 @@ expired threads.
       "strategy": "delete",
       "default_ttl": 43200,
       "sweep_interval_minutes": 5,
-      "sweep_limit": 1000
+      "sweep_limit": 10000
     }
   }
 }
@@ -302,7 +302,7 @@ expired threads.
 | `ttl.strategy` | `string` | `delete` | `delete` removes the thread, its runs/crons, and all checkpoint data. `keep_latest` prunes checkpoint history but keeps the thread and its latest state, then re-arms the TTL (periodic compaction). |
 | `ttl.default_ttl` | `number` | `43200` | Default thread TTL in minutes (43200 = 30 days), applied to threads created after TTL is enabled. |
 | `ttl.sweep_interval_minutes` | `number` | `5` | How often the background sweep runs. |
-| `ttl.sweep_limit` | `integer` | `1000` | Max threads processed per sweep iteration. |
+| `ttl.sweep_limit` | `integer` | `10000` | Max threads processed per sweep iteration. |
 
 Notes:
 
