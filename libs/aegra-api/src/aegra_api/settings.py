@@ -440,10 +440,13 @@ class ThreadTTLSettings(EnvBase):
     AEGRA_THREAD_TTL is either a bare number (default_ttl in minutes) or a
     JSON object with any of: strategy, default_ttl, sweep_interval_minutes,
     sweep_limit. When set it replaces the aegra.json checkpointer.ttl block
-    entirely. Parsed and validated in services.thread_ttl.
+    entirely. LANGGRAPH_THREAD_TTL is accepted as a fallback alias so env
+    files migrated from LangGraph Platform work unchanged; AEGRA_THREAD_TTL
+    wins when both are set. Parsed and validated in services.thread_ttl.
     """
 
     AEGRA_THREAD_TTL: str | None = None
+    LANGGRAPH_THREAD_TTL: str | None = None
 
 
 class EventStreamingSettings(EnvBase):

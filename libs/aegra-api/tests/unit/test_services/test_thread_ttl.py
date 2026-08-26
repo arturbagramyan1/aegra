@@ -60,6 +60,7 @@ def _clear_ttl_config_cache() -> Iterator[None]:
 @pytest.fixture(autouse=True)
 def _no_env_ttl(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(settings.thread_ttl, "AEGRA_THREAD_TTL", None)
+    monkeypatch.setattr(settings.thread_ttl, "LANGGRAPH_THREAD_TTL", None)
 
 
 class TestResolveConfig:
@@ -87,7 +88,7 @@ class TestResolveConfig:
         assert config.strategy == "keep_latest"
         assert config.default_ttl == 1440
         assert config.sweep_interval_minutes == 5
-        assert config.sweep_limit == 1000
+        assert config.sweep_limit == 10000
 
     def test_env_bare_number_sets_default_ttl(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.chdir(tmp_path)
@@ -140,7 +141,7 @@ class TestResolveConfig:
         assert config is not None
         assert config.default_ttl == 120
         assert config.strategy == "delete"
-        assert config.sweep_limit == 1000
+        assert config.sweep_limit == 10000
 
     def test_invalid_env_json_raises(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.chdir(tmp_path)
@@ -162,6 +163,26 @@ class TestResolveConfig:
 
         with pytest.raises(ValidationError):
             get_thread_ttl_config()
+
+    def test_langgraph_alias_used_as_fallback(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Env files migrated from LangGraph Platform work unchanged."""
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(settings.thread_ttl, "LANGGRAPH_THREAD_TTL", "777")
+
+        config = get_thread_ttl_config()
+
+        assert config is not None
+        assert config.default_ttl == 777
+
+    def test_aegra_var_wins_over_langgraph_alias(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(settings.thread_ttl, "AEGRA_THREAD_TTL", "111")
+        monkeypatch.setattr(settings.thread_ttl, "LANGGRAPH_THREAD_TTL", "777")
+
+        config = get_thread_ttl_config()
+
+        assert config is not None
+        assert config.default_ttl == 111
 
     def test_blank_env_falls_back_to_json(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.chdir(tmp_path)
@@ -190,7 +211,7 @@ class TestThreadTTLConfigModel:
         assert config.strategy == "delete"
         assert config.default_ttl == 43200
         assert config.sweep_interval_minutes == 5
-        assert config.sweep_limit == 1000
+        assert config.sweep_limit == 10000
 
     @pytest.mark.parametrize(
         "field",

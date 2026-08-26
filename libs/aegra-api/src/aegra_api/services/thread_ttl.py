@@ -112,7 +112,8 @@ class ThreadTTLConfig(BaseModel):
     strategy: Literal["delete", "keep_latest"] = "delete"
     default_ttl: float = Field(43200, gt=0, le=MAX_TTL_MINUTES)  # minutes; 30 days
     sweep_interval_minutes: float = Field(5, gt=0, le=MAX_TTL_MINUTES)
-    sweep_limit: int = Field(1000, gt=0)
+    # 10000 matches the documented LangGraph Platform default for this block.
+    sweep_limit: int = Field(10000, gt=0)
 
 
 @cache
@@ -126,7 +127,10 @@ def get_thread_ttl_config() -> ThreadTTLConfig | None:
     raises so a misconfigured retention policy fails at startup instead of
     silently deleting (or retaining) the wrong data.
     """
+    # LANGGRAPH_THREAD_TTL is a migration alias; the AEGRA_ var wins when both set.
     raw = settings.thread_ttl.AEGRA_THREAD_TTL
+    if raw is None or not raw.strip():
+        raw = settings.thread_ttl.LANGGRAPH_THREAD_TTL
     if raw is not None and raw.strip():
         try:
             data: dict[str, object] = {"default_ttl": float(raw)}

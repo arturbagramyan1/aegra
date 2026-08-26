@@ -651,9 +651,11 @@ class TestThreadTTLSettings:
 
     def test_defaults_to_none(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv("AEGRA_THREAD_TTL", raising=False)
+        monkeypatch.delenv("LANGGRAPH_THREAD_TTL", raising=False)
         ttl = ThreadTTLSettings(_env_file=None)
 
         assert ttl.AEGRA_THREAD_TTL is None
+        assert ttl.LANGGRAPH_THREAD_TTL is None
 
     def test_raw_string_passthrough(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("AEGRA_THREAD_TTL", '{"default_ttl": 60}')
